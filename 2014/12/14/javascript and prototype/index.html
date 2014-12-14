@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>yesterday you say tommorrow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="javascript闭包与原型链分析
+理解javascript闭包
+&emsp;&emsp;首先要理解什么是javascript闭包，在这里主要参考网络上资源：coolShell,以及《javascript高级程序设计》.
+-闭包：
+为什么Javascript中要使用闭包呢？这是因为Javascript中不可以对作用域进行引用或赋值，一次没有办法在外部访问函数内部的变量，这个时候就需要通过闭包来访">
+<meta property="og:type" content="article">
+<meta property="og:title" content="yesterday you say tommorrow">
+<meta property="og:url" content="http://toughstones.com/2014/12/14/javascript and prototype/">
+<meta property="og:site_name" content="yesterday you say tommorrow">
+<meta property="og:description" content="javascript闭包与原型链分析
+理解javascript闭包
+&emsp;&emsp;首先要理解什么是javascript闭包，在这里主要参考网络上资源：coolShell,以及《javascript高级程序设计》.
+-闭包：
+为什么Javascript中要使用闭包呢？这是因为Javascript中不可以对作用域进行引用或赋值，一次没有办法在外部访问函数内部的变量，这个时候就需要通过闭包来访">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="yesterday you say tommorrow">
+<meta name="twitter:description" content="javascript闭包与原型链分析
+理解javascript闭包
+&emsp;&emsp;首先要理解什么是javascript闭包，在这里主要参考网络上资源：coolShell,以及《javascript高级程序设计》.
+-闭包：
+为什么Javascript中要使用闭包呢？这是因为Javascript中不可以对作用域进行引用或赋值，一次没有办法在外部访问函数内部的变量，这个时候就需要通过闭包来访">
+
+  
+    <link rel="alternative" href="/atom.xml" title="yesterday you say tommorrow" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">yesterday you say tommorrow</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><input type="submit" value="&#xF002;" class="search-form-submit"><input type="hidden" name="q" value="site:http://toughstones.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-javascript and prototype" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/14/javascript and prototype/" class="article-date">
+  <time datetime="2014-12-14T06:26:03.000Z" itemprop="datePublished">12月 14 2014</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="javascript闭包与原型链分析"><div style="text-align:center">javascript闭包与原型链分析</div></h1>
+<h2 id="理解javascript闭包"><span style="color:green">理解javascript闭包</span></h2>
+<p>&emsp;&emsp;首先要理解什么是javascript闭包，在这里主要参考网络上资源：<a href="http://coolshell.cn/articles/6731.html" target="_blank" rel="external">coolShell</a>,以及《javascript高级程序设计》.</p>
+<p>-<strong>闭包：</strong></p>
+<p>为什么Javascript中要使用闭包呢？这是因为Javascript中不可以对作用域进行引用或赋值，一次没有办法在外部访问函数内部的变量，这个时候就需要通过闭包来访问函数内部的变量。</p>
+<p>简而言之：</p>
+<ul>
+<li><p><strong><em>闭包就是函数的局部变量的集合，只是这些局部变量在函数返回后会继续存在</em></strong></p>
+</li>
+<li><p><strong><em>闭包就是函数的“堆栈”在函数返回后并不释放，我们也可以理解为这些函数堆栈并不在栈上分配而是堆上(内存)中</em></strong></p>
+</li>
+<li><p><strong><em>当在一个函数内定义另外一个函数时就会产生闭包</em></strong></p>
+</li>
+<li><p><strong><em>闭包（Closure）这个词的意思是封闭，将外部作用域中的局部变量封闭起来的函数对象称为闭包。被封闭起来的变量与封闭它的函数对象有相同的生命周期。</em></strong></p>
+</li>
+</ul>
+<p><strong>函数对象与闭包</strong></p>
+<p>函数对象不一定是闭包。</p>
+<ul>
+<li><p>C 语言中，可以获取一个函数的指针，并通过指针间接调用此函数。这就是 C 语言中的对象（函数对象也是对象）。但 C 语言中的函数对象不是闭包——它不能访问外部作用域的局部变量。</p>
+</li>
+<li><p>Javascript 中，每个函数都有一个与之相关联的作用域链。每次调用 JavaScript 函数的时候，都会为之创建一个新的对象用来保存局部变量，并把这个对象添加至作用域链中。当函数返回时，再将这个对象删除，此对象会被当做垃圾回收。但如果这个函数定义了嵌套的函数，并将它存储在某处的属性里，就意味着有了一个外部引用指向这个嵌套的函数。它就不会被当作垃圾回收，它所指向的变量绑定对象同样不会被回收。</p>
+</li>
+<li><p>由此可见，JavaScript 中的函数对象是闭包——可以把外部作用域的局部变量“封闭”起来。</p>
+</li>
+</ul>
+<p>如何创建作用域链以及作用域链有什么作用，对彻底理解闭包至关重要，当某个函数被调用时，会创建一个执行环境<strong>(execution context)</strong>及相应的作用域链。然后，使用arguments和其他命名的参数的值来初始化函数的活动对象(activation object)。但在作用域链中，外部函数的活动对象始终处于第二位，外部函数的玩不函数的活动对象处于第三位，….直至作为作用域链终点的全局执行环境。这就与原型链联系起来了。下面我们看一个例子：</p>
+<pre><code>function compare(value1,value2){
+    <span class="keyword">if</span>(value1 &lt; value2){
+        <span class="keyword">return</span> -<span class="number">1</span>;    
+    }<span class="keyword">else</span> <span class="keyword">if</span>(value1 &gt; value2){
+        <span class="keyword">return</span> <span class="number">1</span>;
+    }<span class="keyword">else</span>{
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+}
+<span class="keyword">var</span> <span class="literal">result</span> = compare(<span class="number">5</span>,<span class="number">10</span>);
+</code></pre><p>&emsp;&emsp;以上代码先定义了compare()函数，然后又在全局作用域中调用它，当调用compare()时，会创建一个包含arguments,value1和value2的活动对象，全局执行环境的变量对象(包含result和compare)在compare()执行环境的作用域链中则处于第二位。</p>
+<p>-<strong>每次函数调用都会创建一个新闭包！！</strong></p>
+<p>在ECMAScript中，函数对象中定义的<strong>内部函数(inner function)</strong>是可以直接访问函数外部函数的局部变量，通过这种机制，我们就可以通过如下方式完成对闭包的访问了。</p>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">greeting</span><span class="params">(name)</span></span>{
+    <span class="keyword">var</span> text = <span class="string">'hello'</span> + name;  <span class="comment">//local variable</span>
+    <span class="comment">//每次调用时，产生闭包，并返回内部函数对象给调用者</span>
+    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span><span class="params">()</span></span>{ alert(text);}
+}
+<span class="keyword">var</span> sayHello=greeting(<span class="string">"Closure"</span>);
+sayHello() <span class="comment">//通过闭包访问到了局部变量text</span>
+</code></pre><p>&emsp;&emsp;上述代码的执行结果是：Hello Closure,因为sayHello()函数在greeting函数执行完毕后仍然可以访问定义在其之内的局部变量text。<br>&emsp;&emsp;以上就是闭包的一个简单的例子，闭包在Javascript中有很多应用场景和模式，比如Singleton,Power,Constructor等这些Javascript模式都离不开对闭包的使用。</p>
+<h2 id="闭包的样例"><span style="color:green">闭包的样例</span></h2>
+<p>&emsp;&emsp;前面大致介绍了Javascript闭包是什么<br>，闭包在Javascript是怎么实现的。下面通过一些例子加深理解，主要参考<a href="http://stackoverflow.com/questions/111102/how-do-javascript-closures-work" target="_blank" rel="external">stack Overflow</a>;</p>
+<h3 id="例子1">例子1</h3>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">(x)</span></span>{
+    <span class="keyword">var</span> tmp = <span class="number">3</span>;
+    <span class="function"><span class="keyword">function</span> <span class="title">bar</span><span class="params">(y)</span></span>{
+        alert(x+y+(++tmp)); <span class="comment">//will alert 16</span>
+    }
+    bar(<span class="number">10</span>);
+}
+foo(<span class="number">2</span>);
+</code></pre><p>&emsp;&emsp;闭包很容易跟上述这样的内部函数混淆，当外部函数foo()被调用，它仅仅只是创建和初始化一个新的变量 tmp 然后通过查找函数作用域链找到bar()函数，然后执行完事儿了就exit退出，显然并没有保存上下文环境，函数执行完后变量就被释放。下面是一个<strong>函数闭包</strong>：</p>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">(x)</span></span>{
+    <span class="keyword">var</span> tmp = <span class="number">3</span>;
+    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span><span class="params">(y)</span></span>{
+        alert(x+y+(++tmp));<span class="comment">//will alse alert 16</span>
+    }
+}
+<span class="keyword">var</span> bar = foo(<span class="number">2</span>); <span class="comment">//bar is now a closure</span>
+</code></pre><h3 id="例子2：多个函数绑定同一个闭包，因为他们定义在同一个函数内。">例子2：多个函数绑定同一个闭包，因为他们定义在同一个函数内。</h3>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">setupSomeGlobals</span><span class="params">()</span> </span>{
+    <span class="comment">// Local variable that ends up within closure     </span>
+    <span class="keyword">var</span> num = <span class="number">666</span>;
+    <span class="comment">// Store some references to functions as global variables</span>
+
+    gAlertNumber = <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>{ alert(num); }
+       gIncreaseNumber = <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>{ num++; }
+    gSetNumber = <span class="function"><span class="keyword">function</span><span class="params">(x)</span> </span>{ num = x; }
+}
+</code></pre><h3 id="例子3：当在一个循环中赋值函数时，这些函数将绑定同样的闭包">例子3：当在一个循环中赋值函数时，这些函数将绑定同样的闭包</h3>
+<pre><code>function buildList(list){
+    <span class="keyword">var</span> <span class="literal">result</span> = [];
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>;i &lt; list.length; i++){
+        <span class="keyword">var</span> item = 'item' + list[i];
+        <span class="literal">result</span>.push(function(){alert(item + '' +lists[i])});
+    }
+}
+function testList(){
+    <span class="keyword">var</span> fnlist = buildList([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);
+    //<span class="keyword">using</span> j only to hep prevent confusion - could use i
+    <span class="keyword">for</span>(<span class="keyword">var</span> j = <span class="number">0</span>;j &lt; fnlist.length;j++){
+        fnlist[j]();
+    }
+}
+</code></pre><p>testList的执行结果是弹出item3 undefined 窗口三次，因为这三个函数绑定了同一个闭包，而且item的值为最后计算的结果，但是当i跳出循环时i的值为4，所以list[4]的结果为undefined.</p>
+<h3 id="例子4：每次函数调用的时候创建一个新的闭包">例子4：每次函数调用的时候创建一个新的闭包</h3>
+<pre><code>function newClosure(someNum, someRef) {
+// <span class="type">Local</span> variables that <span class="keyword">end</span> up within closure
+<span class="keyword">var</span> num = someNum;
+<span class="keyword">var</span> anArray = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];
+<span class="keyword">var</span> <span class="keyword">ref</span> = someRef;
+<span class="keyword">return</span> function(x) {
+    num += x;
+    anArray.push(num);
+    alert('num: ' + num +
+    '\nanArray ' + anArray.toString() +
+    '\nref.someVar ' + <span class="keyword">ref</span>.someVar);
+    }
+}
+closure1=newClosure(<span class="number">40</span>,{someVar:'closure <span class="number">1</span>'});
+closure2=newClosure(<span class="number">1000</span>,{someVar:'closure <span class="number">2</span>'});
+
+closure1(<span class="number">5</span>); // num:<span class="number">45</span> anArray[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">45</span>] <span class="keyword">ref</span>:'someVar closure1'
+closure2(-<span class="number">10</span>);// num:<span class="number">990</span> anArray[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">990</span>] <span class="keyword">ref</span>:'someVar closure2'
+
+setupSomeGlobals(); // 为三个全局变量赋值
+gAlertNumber(); //<span class="number">666</span>
+gIncreaseNumber();
+gAlertNumber(); // <span class="number">667</span>
+gSetNumber(<span class="number">12</span>);//
+gAlertNumber();//<span class="number">12</span>
+</code></pre><p>这三个函数都是在同一个外部函数中定义，所以这三个函数的指向的执行上下文环境都是一样的。所以三个函数共享使用外部函数定义的局部变量num。</p>
+<h2 id="闭包的应用"><span style="color:green">闭包的应用</span></h2>
+<h3 id="Single_单件：">Single 单件：</h3>
+<pre><code><span class="keyword">var</span> Singleton = <span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+    <span class="keyword">var</span> privateVariable;
+    <span class="function"><span class="keyword">function</span> <span class="title">privateFunction</span><span class="params">(x)</span></span>{
+        ...privateVariable..
+    }
+
+    <span class="keyword">return</span>{
+        firstMethod: <span class="function"><span class="keyword">function</span> <span class="params">(a,b)</span></span>{
+            ...privateVariable...
+        },
+        secondMethod: <span class="function"><span class="keyword">function</span> <span class="params">(c)</span></span>{
+            ...privateFunction()...
+        }
+    };
+}();
+</code></pre><p>这个单件通过闭包来实现。通过闭包完成了私有的成员和方法的封装。匿名主函数返回一个对象，对象包含了两个方法，方法1可以方法私有变量，方法2访问内部私有哈数。需要注意的地方是匿名主函数结束的地方的’()’，如果没有这个’()’就不能产生单件。因为匿名函数只能返回了唯一的对象，而且不能被其他地方调用。这个就是利用闭包产生单件的方法</p>
+<h2 id="总结分析："><sapn style="color:green">总结分析：</sapn></h2>
+<p>关于闭包，其实可以把外层函数理解成一个类，变量理解为静态成员，内部函数是成员方法，使用时是初始化一个对象。</p>
+<p>关于闭包的用途，个人感觉比较明显的是异步函数的回调中，比如在一个for循环中要使用异步函数，这个时候需要写一个闭包，在回调中使用异步函数，将变量传入闭包中，保存上下文环境，这样可以保证变量的一致性。</p>
+<p>其实dom元素的事件绑定，比如a.onclick = function(){…}也可以认为是一个闭包。</p>
+<p><strong>闭包的应用场景：</strong></p>
+<pre><code>保护函数内的变量安全：如迭代器、生成器。
+在内存中维持变量：如数据缓存，柯里化。
+</code></pre><p>为什么在javascript中闭包的应用都有关键词”return”,引用<a href="http://bonsaiden.github.io/JavaScript-Garden/zh/#function.closures" target="_blank" rel="external">javascript秘密花园</a>中的一段话：</p>
+<pre><code>闭包是Javascript中一个非常重要的特性，这意味着当前作用于总是能访问外部作用域中的变量。
+因为函数时Javascript中唯一拥有自身作用域的结构，因此闭包的创建依赖于函数。
+</code></pre><p><strong>闭包的性能考量：</strong></p>
+<p>如果不是因为某些特殊任务而需要闭包，在没有必要的情况下，在其他函数中创建函数时不明智的，因为闭包对脚本性能具有负面影响，包括处理速度和内存消耗。</p>
+<p>例如，在创建新的对象或者类时，方法通常应该关联于对象的原型，而不是定义到对象的构造器中。原因是这将导致每次构造器被调用，方法都会被重新赋值一次(也就是说，为每一个对象的创建，上面提到过)。</p>
+<p>考虑一下虽然不切实际但却说明问题的示例：</p>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">MyObject</span><span class="params">(name,message)</span></span>{
+    <span class="keyword">this</span>.name = name.toString();
+    <span class="keyword">this</span>.message = message.toString();
+    <span class="keyword">this</span>.getName = <span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">this</span>.name;
+    };
+
+    <span class="keyword">this</span>.getMessage = <span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">this</span>.message;
+    }
+}
+</code></pre><p>上面的代码并未利用到闭包的益处，因此，应该修改为如下常规形式：</p>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">MyObject</span><span class="params">(name,message)</span></span>{
+    <span class="keyword">this</span>.name = name.toString();
+    <span class="keyword">this</span>.message = message.toString();
+}
+MyObject.prototype = {
+    getName:<span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">this</span>.name;
+    },
+    getMessage:<span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">this</span>.message;
+    }
+}
+</code></pre><p>或者改为：</p>
+<pre><code><span class="function"><span class="keyword">function</span> <span class="title">MyObject</span><span class="params">(name,message)</span></span>{
+    <span class="keyword">this</span>.name = name.toString();
+    <span class="keyword">this</span>.message = message.toString();
+}
+MyObject.prototpe.getName = <span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.name;
+};
+MyObject.prototype.getMessage = <span class="function"><span class="keyword">function</span><span class="params">()</span></span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.message;
+}
+</code></pre><p>在前面的两个示例中，继承的原型可以为所有对象共享，且不必再每一次创建对象时定义方法。</p>
+<h1 id="参考："><sapn style="color:green">参考：</sapn></h1>
+<p><a href="http://yuiblog.com/blog/2006/11/27/video-crockford-advjs/" target="_blank" rel="external">Advance javascript</a>(Douglas Crockford 大神的视频，没有字幕，看的时候费老鼻子劲儿了，不过这个老头说话语速不快，多听几次能听懂)</p>
+<p>编者语：由于小弟我能力有限水平一般，还是处于学习阶段，完全用自己的理解去写作“闭包”这个概念恐会造成一定的偏颇，误导了读者，所以只能在计算机编程的世界里当一个搬运工，在学习的过程中将一些优秀的资源(博客，书籍等)进行整合总结，呈现在这篇博客中，所以这篇博客没有打上“原创”的标签，引用的地方也尽可能的加了注释。</p>
+<p>希望能给看到这篇博客的人带来一些帮助我就心满意足了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://toughstones.com/2014/12/14/javascript and prototype/" data-id="wd3iz4cel4r32jma" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2014/12/14/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2014/12/14/javascript and prototype/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2014/12/14/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2014 sunst<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+
+  </div>
+</body>
+</html>
